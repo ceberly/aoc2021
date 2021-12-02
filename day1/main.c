@@ -5,10 +5,10 @@
 #include <stdio.h>
 
 
-extern int jingle_imp(unsigned int *input, int line_count);
-extern int jingle_simd(unsigned int *input, int line_count);
+extern int jingle_imp(unsigned short *input, int line_count);
+extern int jingle_simd(unsigned short *input, int line_count);
 
-int get_input(unsigned int **input) {
+int get_input(unsigned short **input) {
   FILE *f = fopen("input.txt", "rb");
   assert(f != NULL);
 
@@ -30,13 +30,13 @@ int get_input(unsigned int **input) {
 
   assert(line_count > 0);
 
-  *input = (unsigned int *)malloc(line_count * sizeof(unsigned int));
+  *input = (unsigned short *)malloc(line_count * sizeof(unsigned short));
   assert(input != NULL);
 
   rewind(f);
   for (size_t i = 0; i < line_count; i++) {
-    unsigned int reading = 0;
-    assert(fscanf(f, "%u\n", &reading) == 1);
+    unsigned short reading = 0;
+    assert(fscanf(f, "%hu\n", &reading) == 1);
     (*input)[i] = reading;
   }
 
@@ -46,7 +46,7 @@ int get_input(unsigned int **input) {
 }
 
 int main(void) {
-  unsigned int *input = NULL;
+  unsigned short *input = NULL;
 
   int line_count = get_input(&input);
 
