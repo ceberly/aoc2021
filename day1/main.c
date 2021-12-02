@@ -8,6 +8,8 @@
 extern int jingle_imp(unsigned short *input, int line_count);
 extern int jingle_simd(unsigned short *input, int line_count);
 
+extern int jingle_p2(unsigned short *input, int line_count);
+
 int get_input(unsigned short **input) {
   FILE *f = fopen("input.txt", "rb");
   assert(f != NULL);
@@ -53,9 +55,12 @@ int main(void) {
   int output1 = jingle_imp(input, line_count);
   int output2 = jingle_simd(input, line_count);
 
+  int part2_output = jingle_p2(input, line_count);
+
   free(input);
 
   printf("output imperative: %d  output simd: %d\n", output1, output2);
+  printf("part 2 output: %d\n", part2_output);
 
   return EXIT_SUCCESS;
 }
