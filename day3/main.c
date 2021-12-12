@@ -49,9 +49,6 @@ Lines get_input() {
     p += 12;
   }
 
-
-  // btw these pointers leak because we never de-allocate the 
-  // inner thing even when we free input;
   Lines n = { binary_numbers, line_count };
 
   assert(fclose(f) != -1);
@@ -62,8 +59,8 @@ Lines get_input() {
 int main(void) {
   Lines input = get_input();
 
-  int output = jingle_imp(&input);
-  printf("output: %d\n", output);
+  unsigned long output = jingle_imp(&input);
+  printf("output: 0x%lx\n", output);
 
   return EXIT_SUCCESS;
 }

@@ -83,7 +83,6 @@ loop:
   mov v0.16b, v1.16b
 
   // loop if we're not past the end of measurements (x9)
-  // Also now x10 holds the number of leftover measurements
   subs x10, x9, x0
   bhi loop
 
