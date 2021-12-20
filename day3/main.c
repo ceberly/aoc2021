@@ -13,6 +13,7 @@ typedef struct {
 } Lines;
 
 extern int jingle_imp(const Lines *lines);
+extern int jingle2_imp(const Lines *lines);
 
 Lines get_input() {
   FILE *f = fopen("input.txt", "rb");
@@ -60,7 +61,9 @@ int main(void) {
   Lines input = get_input();
 
   unsigned long output = jingle_imp(&input);
-  printf("output: 0x%lx\n", output);
+  unsigned long output2 = jingle2_imp(&input);
+  printf("output 1: %lu\n", output);
+  printf("output 2: %lu\n", output2);
 
   return EXIT_SUCCESS;
 }

@@ -81,6 +81,10 @@ jingle_imp:
   //           m0.0 m0.3 m0.6 m0.9 < b0
   //
 
+  // we should compute the end of the loop by looking at the last
+  // pointer and the leftovers. But, i'm out of time on this, so
+  // we will just divide the 1000 measurements by 4 per loop
+  mov w11, #250
 loop:
   ld3 {v0.16b, v1.16b, v2.16b}, [x1], #48
 
@@ -100,15 +104,6 @@ loop:
   addv s1, v1.4s
   addv s2, v2.4s
 
-  // now all the counts are in the lower 4 bytes of each of s0, s1, s2 like so:
-  // s0: (high 15) [...12bytes... mX.2 mX.5 mX.8 mX.11 ] (low 0)
-  // s1: (high 15) [...12bytes... mX.1 mX.4 mX.7 mX.10 ] (low 0)
-  // s2: (high 15) [...12bytes... mX.0 mX.3 mX.6 mX.9 ] (low 0)
-
-  // shift into the right position for each accumulating vector
-  // using unsigned extend, basically just put zeros before each count.
-  // Now we have the counts as half words so they can be added to
-  // the accumulating vectors.
   uxtl v7.8h, v0.8b
   uxtl v8.8h, v1.8b
   uxtl v9.8h, v2.8b
@@ -117,7 +112,9 @@ loop:
   add v5.4h, v5.4h, v8.4h
   add v6.4h, v6.4h, v9.4h
 
-  // compare with the line_count / 2 vector
+  subs w11, w11, #1
+  bne loop
+
   cmhi v4.4h, v4.4h, v10.4h
   cmhi v5.4h, v5.4h, v10.4h
   cmhi v6.4h, v6.4h, v10.4h
@@ -147,8 +144,16 @@ loop:
   addv h1, v5.4h
   addv h2, v6.4h
 
-  umov w0, v2.8h[0]
-  //mov x0, x4
+  // get the total value
+  add d0, d0, d1
+  add d0, d0, d2
+
+  umov x0, v0.2d[0]
+
+  mvn x1, x0
+  and x1, x1, 0xFFF // bottom 12 bytes only
+
+  mul x0, x0, x1
 
   ret
 
