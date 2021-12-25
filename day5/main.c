@@ -12,6 +12,7 @@ typedef struct Input {
 } Input;
 
 extern int jingle(Input *input);
+extern int jingle2(Input *input);
 
 int main(void) {
   FILE *file = fopen("input.txt", "r"); 
@@ -46,7 +47,9 @@ int main(void) {
   input.pair_count = pair_count;
 
   int output = jingle(&input);
+  int output2 = jingle2(&input);
   printf("output: %d\n", output);
+  printf("output2: %d\n", output2);
 
   fclose(file);
   return EXIT_SUCCESS;
