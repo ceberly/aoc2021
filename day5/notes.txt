@@ -1,0 +1,45 @@
+the "mask" trick. not needed here after all, but still cool.
+
+// do the remaining bytes...
+// this will read past the end of input, unfortunately.
+// ld4 { v0.8h, v1.8h, v2.8h, v3.8h }, [x1]
+
+// x3 is the number of pairs left. A pair looks like this:
+// (x1, y1, x2, y2) 4 * 2bytes = 8 bytes
+//
+// Since we do an interleaved read into 4 vectors, each vector
+// gets one element per remaining pair (2 bytes).
+//
+// filled bytes in each vector = 
+// (total_pairs - (complete_pairs * 8)) * 2 bytes each
+mov x3, x3, lsl #4
+mov x2, x2, lsl #1
+sub x3, x2, x3
+
+// see https://twitter.com/stephentyrone/status/1466865096739725330
+// (again) for how this mask trick works, but
+// the mask has 16 bytes of ones and 14 bytes of zeros,
+// so, for example, if we have 1 pair remaining, there is 1 element (2bytes)
+// in a vector, we need 2 bytes of 1's and 14 bytes of zeros from the mask.
+// We get this by adding 16 - 2 to the address of the mask:
+//
+// 111111111111111100000000000000
+// ^             ^              ^
+// mask address  + 14           end of 16 byte mask
+ldr x4, =mask
+mov w5, #16
+sub w3, w5, w3
+ldr q4, [x4, x3]
+
+umov w0, v3.8h[2]
+
+ret
+
+.data
+mask:
+.rept 16
+  .byte 0xFF
+.endr
+.rept 14
+  .byte 0x00
+.endr
