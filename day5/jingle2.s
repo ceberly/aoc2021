@@ -9,11 +9,10 @@ jingle2:
   ldr x1, [x0], #8 // start of packed pairs
   ldr x2, [x0] // pair count
 
-
   eor x4, x4, x4 // max x
   eor x5, x5, x5 // max y
 
-  mov x3, x2 // preserve number of pairs for later.
+  mov x3, x2 // counter down from number of lines
 rmax:
   ldrh w6, [x1], #2 // x1
   ldrh w7, [x1], #2 // x2
@@ -33,7 +32,6 @@ ok:
   cmp w9, w5
   csel w5, w9, w5, hi
 
-skip:
   subs w3, w3, #1
   bne rmax
 
@@ -79,42 +77,44 @@ nextline:
   subs w6, w6, w7 // signed distance between y1 and y2
 
   // for Part 2, we need two increments, one for x and one for y
-  mov w8, #1 // x increment amount.
-  mov w9, #1 // y increment amount.
+  mov w8, #0 // x increment amount.
+  mov w9, #0 // y increment amount.
+
+  // countdown number
+  mov x16, #0
 
   cmp w4, #0
+  beq incy
+  mov w8, #1
   cneg w8, w8, gt
+  cneg w16, w4, lt
 
+incy:
   cmp w6, #0
+  beq paint
+  mov w9, #1
   cneg w9, w9, gt
+  cneg w16, w6, lt
 
 paint:
-  add w11, w5, w4 // paint x coordinate
-  add w13, w7, w6 // paint y coordinate
-
-  mov w0, w13
-  ret
-
   // memory location (in the stack) of this "pixel" is: y * max x + x
-  madd x9, x13, x10, x11
-
-  // we can use x6 register here because we'll never do the veritcal line now.
-  ldrb w11, [sp, x9]
+  madd w0, w7, w10, w5
+  ldrb w11, [sp, x0]
   cmp w11, #2
   beq skipwrite
 
   add w11, w11, #1
-  strb w11, [sp, x9]
+  strb w11, [sp, x0]
   cmp w11, #2 // increment the total overlap counter if we need to.
   cinc w12, w12, eq
 
 skipwrite:
-  add w4, w4, w8
-  add w6, w6, w9
-  cmp w4, w8 // the end, 0 distance + inc, will be 1 or -1
-  bne paint
+  sub w5, w5, w8
+  sub w7, w7, w9
 
-continue:
+  subs w16, w16, #1
+  bge paint
+
   subs w2, w2, #1
   bne nextline
 

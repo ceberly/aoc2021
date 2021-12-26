@@ -46,9 +46,9 @@ int main(void) {
 
   input.pair_count = pair_count;
 
-  int output = jingle(&input);
+  //int output = jingle(&input);
   int output2 = jingle2(&input);
-  printf("output: %d\n", output);
+  //printf("output: %d\n", output);
   printf("output2: %d\n", output2);
 
   fclose(file);
