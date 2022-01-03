@@ -11,13 +11,6 @@
 #define MAX_UINT16 65535
 
 
-enum NumberParserState {
-  parser_begin,
-  parser_did_digit,
-  parser_did_separator,
-  // didEnd 
-};
-
 // A Go-like slice that can (only) be appended to.
 typedef struct {
   uint16_t *a;
@@ -41,17 +34,19 @@ Uint16Array *new_uint16_array(size_t capacity) {
 
 uint8_t uint16_array_append(Uint16Array *a, uint16_t v) {
   if (a->len == a->capacity) {
+    if (a->capacity == 0) a->capacity = 1;
+
     // grow
     uint16_t *n = malloc(sizeof(uint16_t) * (a->capacity * 2));
     assert(n != NULL);
-    memcpy(a->a, n, a->len);
+    memcpy(n, a->a, a->len * sizeof(uint16_t));
     
     free(a->a);
     a->a = n;
     a->capacity = a->capacity * 2;
   }
 
-  a->a[a->len - 1] = v;
+  a->a[a->len] = v;
   a->len = a->len + 1;
   return 1;
 }
@@ -88,30 +83,54 @@ String *new_string(const char *c) {
 }
 
 Uint16Array *unsigned_16bit_split(const String *s, char sep) {
-  if (s->len == 0) return new_uint16_array(1);
-
   Uint16Array *r = new_uint16_array(1024); // cool default.
   assert(r != NULL);
 
-  enum NumberParserState state = parser_begin;
   size_t spos = 0;
-
   size_t end = s->len;
-  while(1) {
-    if (spos == end) {
-      if (state != parser_did_digit) goto bad_parse;
-    }
 
-    char c = s->s[spos];  
+  uint8_t buflen = 0;
+  uint8_t buf[5] = {0};
+
+  while(spos < end) {
+    char c = s->s[spos];
     if (c == sep) {
-      if (state != parser_did_digit) goto bad_parse;
+      if (buflen == 0) goto bad_parse;
+      unsigned int digits_place = 1;
+      uint16_t val = 0;
+      for (size_t i = buflen - 1; i < buflen; i--) {
+        //XXX: check for overflow. i believe the Is Parallel Programming Hard
+        // book has an example of how to do this safely.
+        val += (buf[i] * digits_place);
+        digits_place *= 10; 
+      }
+
+      assert(uint16_array_append(r, val) == 1);
+
+      buflen = 0;
+      goto next;
     }
 
-    uint8_t digit = '9' - c;
+    uint8_t digit = c - '0';
     if (digit >= 10) goto bad_parse;
+    buf[buflen++] = digit;
 
+next:
     spos += 1;
   }
+  
+  // should end on a number without a separator following it.
+  if (buflen == 0) goto bad_parse;
+  unsigned int digits_place = 1;
+  uint16_t val = 0;
+  for (size_t i = buflen - 1; i < buflen; i--) {
+    //XXX: check for overflow. i believe the Is Parallel Programming Hard
+    // book has an example of how to do this safely.
+    val += (buf[i] * digits_place);
+    digits_place *= 10; 
+  }
+
+  assert(uint16_array_append(r, val) == 1);
 
   return r;
 

@@ -70,8 +70,47 @@ bool test_string(void) {
   return true;
 }
 
+bool test_array_grow(void) {
+  Uint16Array *a = new_uint16_array(2);
+  uint16_array_append(a, 1);
+  uint16_array_append(a, 2);
+  uint16_array_append(a, 3);
+
+  if (a->len != 3) {
+    fprintf(stderr, "expected len 3, got %lu instead.\n", a->len);
+    return false;
+  }
+
+  if (a->capacity != 4) {
+    fprintf(stderr, "expected capacity 4, got %lu instead.\n", a->capacity);
+    return false;
+  }
+
+  if (a->a[0] != 1) {
+    fprintf(stderr, "expected a[0] == 1, got %u instead.\n", a->a[0]);
+    return false;
+  }
+
+  if (a->a[1] != 2) {
+    fprintf(stderr, "expected a[0] == 2, got %u instead.\n", a->a[1]);
+    return false;
+  }
+
+  if (a->a[2] != 3) {
+    fprintf(stderr, "expected a[0] == 3, got %u instead.\n", a->a[2]);
+    return false;
+  }
+
+  return true;
+}
+
 int main(void) {
   if (!test_unsigned_16bit_split()) {
+    fprintf(stderr, "failed.\n");
+    return EXIT_FAILURE;
+  }
+
+  if (!test_array_grow()) {
     fprintf(stderr, "failed.\n");
     return EXIT_FAILURE;
   }
