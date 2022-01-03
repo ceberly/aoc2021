@@ -94,6 +94,8 @@ Uint16Array *unsigned_16bit_split(const String *s, char sep) {
 
   while(spos < end) {
     char c = s->s[spos];
+    if (c == '\n') goto next;
+
     if (c == sep) {
       if (buflen == 0) goto bad_parse;
       unsigned int digits_place = 1;
