@@ -5,6 +5,7 @@
 
 #include "../types.h"
 
+extern void heap_sort(Uint16Array *input);
 extern int jingle(Uint16Array *input);
 
 int main(void) {
@@ -30,6 +31,8 @@ int main(void) {
   assert(input != NULL);
 
   fprintf(stderr, "found %lu uint16_t items...\n", input->len);
+
+  heap_sort(input);
 
   int output = jingle(input);
   //int output2 = jingle2(&input);

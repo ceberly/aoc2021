@@ -7,49 +7,46 @@
 //  size_t capacity;
 //} Uint16Array;
 
+// Input->a is assumed to have been sorted by heap_sort in algos.s
 jingle:
   ldr x1, [x0], #8 // start of packed uint16_t
   ldr x2, [x0] // item count
 
-  add x3, x1, x2, LSL #1 // end of input
+  // compute the median
+  mov x3, x2, lsr #1 // always need the floored middle element
+  ldrh w0, [x1, x3, lsl #1] // 16 bit numbers
 
-  mov w4, #0 // sum of items. I guess it can't be more than 32bit ??
+  and x4, x2, #1 // x mod 2
+  cbnz x4, cost // if the number of inputs is odd, we are done.
 
-  subs xzr, x3, x1 // check for zero length
-  beq fail
+  // even number of inputs, take the average of the middle 2.
+  // the second middle is in w0 already, need the first.
+  // The reason its the second already there and not the first is like so:
+  // odd number of inputs: i: 0 1 2 3 4   5 // 2 == 2 which is the *third* 
+  // element, which is the one we want.
+  // even number of inputs: i: 0 1 2 3    4 // 2 == 3 which is the *third*
+  // element, and we also need the *second*.
 
-  // sum the elements
-sum:
-  ldrh w5, [x1], #2
-  add w4, w4, w5
-  subs xzr, x3, x1
-  bne sum
+  add x3, x1, x3, lsl #1
+  ldrh w3, [x3, #-2]
 
-  // average the elements
-  udiv x4, x4, x2
+  add w0, w0, w3 // average the elements.
+  mov w0, w0, lsr #1
 
-  mov x0, x4
-  ret
-
-  // calculate the absolute value distance for each element
-  mov w6, #0 // sum of distance
-  ldr x1, [x0, #-8] // reset to start of elements.
+  // median value is in w0 at this point.
+  // subtract that from each position to find the cost, and sum that.
+  mov w4, #0
+  add x2, x1, x2, lsl #1 // end of input
+cost:
+  ldrh w3, [x1], #2 
+  // subtract, take absolute value, add to w4...
+  subs w3, w0, w3
+  csneg w3, w3, w3, hi
+  add w4, w4, w3
   
-dist:
-  ldrh w5, [x1], #2
+  cmp x1, x2
+  bne cost
 
-  // absolute value
-  subs w5, w4, w5
-  csneg w5, w5, w5, gt
+  mov w0, w4
 
-  add w6, w6, w5
-
-  subs xzr, x3, x1
-  bne dist
-
-  mov w0, w6
-  ret
-
-fail:
-  mov w0, #-1
   ret
