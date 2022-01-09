@@ -2,56 +2,43 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdint.h>
-#include <string.h>
 
+#include "../types.h"
 
-typedef struct Input {
-  uint16_t *pos;
-  size_t crab_count;
-} Input;
-
-extern int jingle(Input *input);
+extern int jingle(Uint16Array *input);
 
 int main(void) {
   FILE *file = fopen("input.txt", "r"); 
   assert(file != NULL);
 
-  Input input = { NULL, 0 };
+  assert(fseek(file, 0L, SEEK_END) == 0);
+  int size = ftell(file);
+  assert(size > 0);
+  assert(fseek(file, 0L, SEEK_SET) == 0);
 
-  // cat input.txt | awk -F, '{print NF}'
-  // I'll fix this next year for advent of code in C :)
-  input.pos = malloc(1000 * sizeof(uint16_t));
-  assert(input.packed_pairs != NULL);
+  char *contents = malloc(size * sizeof(char));
+  assert(contents != NULL);
 
-  uint16_t *packed = input.pos;
-  size_t crab_count = 0;
-  while(1) {
-    int x1, y1, x2, y2 = 0;
+  size_t n = fread(contents, sizeof(char), size, file);
+  assert(n == size);
 
-    int n = fscanf(file, "%d,%d,%d,%d\n", &x1, &y1, &x2, &y2);
-    if (n == -1) {
-      break;
-    }
+  String *s = new_string(contents);
+  assert(s->len == size);
 
-    // need to have complete input.
-    assert(n == 4);
+  fprintf(stderr, "parsing input length %lu...\n", s->len);
+  Uint16Array *input = unsigned_16bit_split(s, ',');
+  assert(input != NULL);
 
-    *packed++ = x1;
-    *packed++ = x2;
-    *packed++ = y1;
-    *packed++ = y2;
+  fprintf(stderr, "found %lu uint16_t items...\n", input->len);
 
-    pair_count += 1;
-  }
+  int output = jingle(input);
+  //int output2 = jingle2(&input);
+  printf("output: %d\n", output);
+  //printf("output2: %d\n", output2);
 
-  input.pair_count = pair_count;
-
-  //int output = jingle(&input);
-  int output2 = jingle2(&input);
-  //printf("output: %d\n", output);
-  printf("output2: %d\n", output2);
-
+  uint16_array_free(input);
+  string_free(s);
+  free(contents);
   fclose(file);
   return EXIT_SUCCESS;
 }
