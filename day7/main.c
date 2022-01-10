@@ -7,6 +7,7 @@
 
 extern void heap_sort(Uint16Array *input);
 extern int jingle(Uint16Array *input);
+extern int jingle2(Uint16Array *input);
 
 int main(void) {
   FILE *file = fopen("input.txt", "r"); 
@@ -35,9 +36,9 @@ int main(void) {
   heap_sort(input);
 
   int output = jingle(input);
-  //int output2 = jingle2(&input);
+  int output2 = jingle2(input);
   printf("output: %d\n", output);
-  //printf("output2: %d\n", output2);
+  printf("output2: %d\n", output2);
 
   uint16_array_free(input);
   string_free(s);

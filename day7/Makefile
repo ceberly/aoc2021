@@ -6,5 +6,5 @@
 #	qemu-aarch64 a.out
 
 default:
-	gcc -std=c99 -pedantic -Wall -Werror -g main.c ../algos.s jingle.s -D_POSIX_C_SOURCE=200809L -o day7
+	gcc -std=c99 -pedantic -Wall -Werror -g main.c ../algos.s jingle2.s jingle.s -D_POSIX_C_SOURCE=200809L -o day7
 	./day7
